@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <vector>
 
 namespace kuznetsov {
   class Clicker {
@@ -25,11 +26,23 @@ namespace kuznetsov {
 
 int main()
 {
-  long long sum = 0;
-  kuznetsov::Clicker cl;
-  for(size_t i = 0; i < 1'000'000'000; i++) {
-    sum += i;
+  constexpr size_t size{1'000'000'000};
+  using data_t = std::vector< unsigned long long >;
+  using value_t = data_t::value_type;
+
+  double init{}, total{};
+  value_t sum{};
+  {
+    kuznetsov::Clicker cl;
+    data_t vals(size, 1);
+    init = cl.millisec();
+    for (size_t i = 0; i < vals.size(); ++i) {
+      sum += vals[i];
+    }
+    total = cl.millisec();
   }
-  std::cout << cl.millisec() << '\n';
+  std::cout << init << '\n';
+  std::cout << total << '\n';
+  std::cout << total - init << '\n';
 }
 
