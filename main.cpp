@@ -54,33 +54,33 @@ int main(int argc, char** argv)
   size_t valsOnThread = size / threads;
   double init{0}, total{0};
   value_t sum{0};
+  
   try {
-    {
-      kuznetsov::Clicker cl;
-      data_t vals(size, 1);
-      std::vector< std::future< value_t > > tasks;
-      tasks.reserve(threads);
-      init = cl.millisec();
+    kuznetsov::Clicker cl;
+    data_t vals(size, 1);
+    std::vector< std::future< value_t > > tasks;
+    tasks.reserve(threads);
+    init = cl.millisec();
 
-      for(size_t i = 0; i < threads - 1; ++i) {
-        auto cbegin = vals.cbegin() + valsOnThread * i;
-        auto cend = vals.cbegin() + valsOnThread * (i + 1);
-        tasks.emplace_back(std::async(std::launch::async, summator, cbegin, cend));
-      }
-      auto cb = vals.cbegin() + valsOnThread * (threads - 1);
-      auto ce = vals.cend();
-      tasks.emplace_back(std::async(std::launch::async, summator, cb, ce));
-      
-      for(size_t i = 0; i < threads; ++i) {
-        sum += tasks[i].get();
-      }
-
-      total = cl.millisec();
+    for(size_t i = 0; i < threads - 1; ++i) {
+      auto cbegin = vals.cbegin() + valsOnThread * i;
+      auto cend = vals.cbegin() + valsOnThread * (i + 1);
+      tasks.emplace_back(std::async(std::launch::async, summator, cbegin, cend));
     }
+    auto cb = vals.cbegin() + valsOnThread * (threads - 1);
+    auto ce = vals.cend();
+    tasks.emplace_back(std::async(std::launch::async, summator, cb, ce));
+    
+    for(size_t i = 0; i < threads; ++i) {
+      sum += tasks[i].get();
+    }
+
+    total = cl.millisec();
   } catch(const std::exception& e) {
     std::cerr << e.what() << '\n';
     return 1;
   }
+
   std::cout << "Init: " << init << '\n';
   std::cout << "Total: " << total << '\n';
   std::cout << "Duration of calc: " << total - init << '\n';
